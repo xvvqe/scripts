@@ -1,0 +1,313 @@
+getgenv().settings = {
+    accounts = {
+        ["Stand Creator"] = "1145324307",
+        ["Stand Core"] = game.Players.LocalPlayer.UserId
+    },
+    commands = {
+        ["Fix Script"] = ".",
+        ["Summon"] = "s",
+        ["Auto Save Creator"] = "asave",
+        ["Kill Player"] = "k",
+        ["Knock Player"] = "kn",
+        ["Loop Kill Player"] = "lk",
+        ["Bring Player"] = "b",
+        ["Loop Knock Player"] = "lkn",
+    }
+}
+if not game:IsLoaded() then
+	game.Loaded:Wait()
+end
+repeat task.wait() until game.Players.LocalPlayer.Character:FindFirstChild('FULLY_LOADED_CHAR')
+local Creator = nil
+local Players = game.Players
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character
+function grabPlayer(player,place)
+    getgenv().loop = true
+    local done = false
+    local cframe = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+    if not place then
+
+    end
+    pcall(function()
+        while true and task.wait() do
+            if not game.Players:FindFirstChild(player.Name) or player.Character:FindFirstChild("GRABBING_COINSTRAINT") or player.Character:FindFirstChild("BodyEffects")["K.O"].Value ~= true or getgenv().loop == false then
+                done = true
+                task.wait(0.2)
+                if place then
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = place
+                else
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Creator.Character.UpperTorso.Position)
+                end
+                task.wait(0.3)
+                game:GetService("ReplicatedStorage").MainEvent:FireServer("Grabbing", false)
+                task.wait(0.1)
+                getgenv().loop = false
+                break
+            end
+            if not done then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.UpperTorso.Position) * CFrame.new(0,2.3,0)
+                game:GetService("ReplicatedStorage").MainEvent:FireServer("Grabbing", false)
+            else
+                task.wait(0.7)
+                return "done"
+            end
+        end
+    end)
+end
+function kill(player)
+    getgenv().loop = true
+    repeat task.wait() 
+        pcall(function()
+            if game.Players:FindFirstChild(player.Name) and player.Character:WaitForChild("BodyEffects")["K.O"].Value ~= true then
+                if game.Players.LocalPlayer.Character.BodyEffects.Attacking.Value == true then
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.UpperTorso.Position+(player.Character.UpperTorso.Velocity*0.35)) * CFrame.new(0,0,0) 
+                else
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.UpperTorso.Position+(player.Character.UpperTorso.Velocity*0.35)) * CFrame.new(0,-4.8,0) 
+                end
+                if not game.Players.LocalPlayer.Character:FindFirstChild("Combat") then
+                    game.Players.LocalPlayer.Backpack:FindFirstChild("Combat").Parent = game.Players.LocalPlayer.Character
+                elseif game.Players.LocalPlayer.Character:FindFirstChild("Combat")  then
+                    game.Players.LocalPlayer.Character:FindFirstChild("Combat"):Activate()
+                end
+            elseif not game.Players:FindFirstChild(player.Name) or player.Character:FindFirstChild("BodyEffects")["K.O"].Value == true then
+                getgenv().loop = false
+            end
+        end)
+    until not game.Players:FindFirstChild(player.Name) or player.Character:WaitForChild("BodyEffects")["K.O"].Value == true or getgenv().loop == false 
+    getgenv().loop = false
+    return "done"
+end
+function findPlayer(plr)
+    for i,v in pairs(game.Players:GetChildren()) do
+        if string.find(string.lower(v.Name), string.lower(plr)) or string.find(string.lower(v.DisplayName), string.lower(plr)) then
+            return v
+        end
+    end
+end
+function chat(msg)
+    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("/w "..Creator.Name.." "..msg, "All")
+end
+getgenv().stomp = function(player)
+    getgenv().loop = true
+    pcall(function()
+        repeat task.wait()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.UpperTorso.Position) * CFrame.new(0,2.3,0)
+            game:GetService("ReplicatedStorage").MainEvent:FireServer("Stomp")
+        until not game.Players:FindFirstChild(player.Name) or player.Character:FindFirstChild("BodyEffects")["K.O"].Value ~= true or getgenv().loop == false or player.Character:FindFirstChild("BodyEffects")["Dead"].Value == true
+        if player and player.Character:FindFirstChild("BodyEffects")["K.O"].Value ~= true or player.Character:FindFirstChild("GRABBING_COINSTRAINT") then
+            kill(player)
+        end
+    end)
+    getgenv().loop = false
+    return "done"
+end
+local saving = false
+function chatted(plr)
+    print("called "..plr.Name)
+    plr.Chatted:Connect(function(message)
+        message = string.lower(message)
+        message = message:split(" ")
+        args = message
+        message = message[1]
+        table.remove(args,1)
+        if(message == string.lower(getgenv().settings.commands["Fix Script"])) then
+            for i=1,10 do
+                task.wait(0.01)
+                getgenv().loop = false
+                getgenv().loop2 = false
+            end
+        elseif(message == string.lower(getgenv().settings.commands["Bring Player"])) then
+            getgenv().loop = false
+            player = findPlayer(args[1])
+            if player then
+                pcall(function()
+                    local k = kill(player)
+                    repeat task.wait() until k
+                    grabPlayer(player)
+                end)
+            elseif not player then
+                chat('player not found')
+            end
+        elseif(message == string.lower(getgenv().settings.commands["Knock Player"])) then
+            getgenv().loop = false
+            player = findPlayer(args[1])
+            if player then
+                pcall(function()
+                    local k = kill(player)
+                end)
+            else
+                chat("player not found")
+            end
+        elseif(message == string.lower(getgenv().settings.commands["Kill Player"])) then
+            getgenv().loop = false
+            player = findPlayer(args[1])
+            if player then
+                pcall(function()
+                    local k = kill(player)
+                    repeat task.wait() until k
+                    getgenv().stomp(player)
+                end)
+            else
+                chat("player not found")
+            end
+        elseif(message == string.lower(getgenv().settings.commands["Loop Kill Player"])) then
+            player = findPlayer(args[1])
+            if player then
+                getgenv().loop2 = true
+                repeat task.wait()
+                    pcall(function()
+                        local k = kill(player)
+                        repeat task.wait(.3) until k
+                        local k = nil
+                        local s = getgenv().stomp(player)
+                        repeat task.wait(.3) until s
+                        local s = nil
+                        player.CharacterAdded:Wait(.3)
+                    end)
+                until not game.Players:FindFirstChild(player.Name) or getgenv().loop2 == false
+            else
+                chat("player not found")
+            end
+        elseif(message == string.lower(getgenv().settings.commands["Loop Knock Player"])) then
+            player = findPlayer(args[1])
+            if player then
+                getgenv().loop2 = true
+                repeat task.wait()
+                    pcall(function()
+                        local k = kill(player)
+                        repeat task.wait() until player.Character:FindFirstChild("BodyEffects")["K.O"].Value ~= true
+                    end)
+                until not game.Players:FindFirstChild(player.Name) or getgenv().loop2 == false
+            else
+                chat("player not found")
+            end
+        elseif(message == string.lower(getgenv().settings.commands["Summon"])) then
+            if getgenv().summonloop then
+                getgenv().summonloop = false
+            else
+                getgenv().summonloop = true
+            end
+        elseif(message == string.lower(getgenv().settings.commands["Auto Save Creator"])) then
+            if getgenv().saveloop then
+                getgenv().saveloop = false
+                task.wait()
+                saving = false
+            else
+                getgenv().saveloop = true
+                task.wait()
+                saving = false
+            end
+            print(getgenv().saveloop)
+        end
+    end)
+end
+function findc()
+    while true and task.wait() do
+        pcall(function()
+            for i,v in pairs(Players:GetChildren()) do
+                if tostring(v.UserId) == tostring(getgenv().settings.accounts["Stand Creator"]) then
+                    Creator = v
+                end
+            end
+        end)
+        if Creator then break end
+    end
+end
+game.Players.PlayerRemoving:Connect(function(plr)
+    if plr.UserId == tostring(getgenv().settings.accounts["Stand Creator"]) then
+        Creator = nil
+        findc()
+    end
+end)
+print("WAITING ON CREATOR")
+pcall(findc)
+repeat task.wait() until Creator
+chatted(Creator)
+print("CREATOR FOUND")
+getgenv().summonloop = true
+getgenv().saveloop = false
+getgenv().loop = false
+coroutine.resume(coroutine.create(function()
+    local instance = Instance.new('Part')
+    instance.CFrame = CFrame.new(99999,99999,99999)
+    while true and task.wait(.75) do
+        if game.Workspace:FindFirstChildWhichIsA('Camera').CameraSubject ~= instance then
+            game.Workspace:FindFirstChildWhichIsA('Camera').CameraSubject = instance
+        end
+    end
+end))
+coroutine.resume(coroutine.create(function()
+    while true and task.wait() do
+        pcall(function()
+            if Character:FindFirstChild("BodyEffects")["K.O"].Value == true then
+                for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                    if v:IsA("MeshPart") then
+                        v:Remove()
+                    end
+                end
+                Character = game.Players.LocalPlayer.CharacterAdded:Wait()
+            end
+        end)
+    end
+end))
+coroutine.resume(coroutine.create(function()
+    while true and task.wait() do
+        pcall(function()
+            if getgenv().saveloop == true and Creator.Character:FindFirstChild("BodyEffects")["K.O"].Value == true  then
+                getgenv().loop = false
+                getgenv().loop2 = false
+                saving = true
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Creator.Character.UpperTorso.Position) * CFrame.new(0,2.3,0)
+                game:GetService("ReplicatedStorage").MainEvent:FireServer("Grabbing", false)
+            elseif Creator.Character:FindFirstChildWhichIsA("Weld") and getgenv().saveloop == true then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-505.1904296875, 48.56502914428711, -213.97683715820312) * CFrame.new(0,2,0)
+            elseif Creator.Character:FindFirstChild("BodyEffects")["K.O"].Value == false and not Creator.Character:FindFirstChildWhichIsA("Weld") then
+                saving = false 
+            end
+        end)
+    end
+end))
+coroutine.resume(coroutine.create(function()
+    while true and task.wait() do
+        pcall(function()
+            if getgenv().loop == false and getgenv().summonloop == true and saving == false then
+                coroutine.resume(coroutine.create(function()
+                    if not game.Players.LocalPlayer.Character.BodyEffects:FindFirstChild('Block') then
+                        game:GetService("ReplicatedStorage").MainEvent:FireServer("Block", true)
+                    end
+                end))
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = Creator.Character.UpperTorso.CFrame * CFrame.new(1.5,2.5,1.5)
+            elseif getgenv().loop == false and getgenv().summonloop == false and saving == false then
+                if not Creator.Character:FindFirstChildWhichIsA("Weld") then
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(999999,999999,999999)
+                end
+            end
+        end)
+    end
+end))
+coroutine.resume(coroutine.create(function()
+    while true and task.wait() do
+        pcall(function()
+            if not Character:FindFirstChild("[Mask]") and not game.Players.LocalPlayer.Backpack:FindFirstChild("[Mask]") and not Character:FindFirstChild("In-gameMask") then
+                saving = true
+                Character.HumanoidRootPart.CFrame = CFrame.new(game.Workspace.Ignored.Shop["[Surgeon Mask] - $27"].Head.Position) * CFrame.new(0,2,0)
+                fireclickdetector(game.Workspace.Ignored.Shop["[Surgeon Mask] - $27"].ClickDetector,0)
+            elseif game.Players.LocalPlayer.Backpack:FindFirstChild("[Mask]") and not Character:FindFirstChild("In-gameMask") then
+                game.Players.LocalPlayer.Backpack:FindFirstChild("[Mask]").Parent = Character
+            elseif Character:FindFirstChild("[Mask]") and not Character:FindFirstChild("In-gameMask") then
+                Character:FindFirstChild("[Mask]"):Activate()
+            elseif Character:FindFirstChild("In-gameMask") and Character:FindFirstChild("In-gameMask"):FindFirstChild("Handle") then
+                saving = false
+                Character["In-gameMask"]:FindFirstChild("Handle"):Remove()
+            end
+        end)
+    end
+end))
+coroutine.resume(coroutine.create(function()
+    while true and task.wait() do
+        if game.Players.LocalPlayer.Character.Humanoid.Sit == true then
+            game.Players.LocalPlayer.Character.Humanoid.Jump = true 
+        end
+    end
+end))
