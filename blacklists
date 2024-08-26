@@ -1,0 +1,4 @@
+blacklistedHwids = {
+
+}
+return blacklistedHwids
