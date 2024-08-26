@@ -1,4 +1,0 @@
-blacklistedHwids = {
-"A7CEBC9E-3864-4DC2-A1F8-0E401866E1C3"
-}
-return blacklistedHwids
