@@ -19,3 +19,5 @@ users = {
 3254272005,
 345345
 }
+
+return users
