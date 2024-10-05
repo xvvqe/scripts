@@ -1,1 +1,4 @@
-return{'Script has a update, go reexecute it'}
+return{
+'Script has a update, go reexecute it',
+'1.28b',
+}
