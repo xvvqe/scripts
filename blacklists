@@ -1,4 +1,3 @@
-blacklistedHwids = {
-
+return{
+"037640ca-5f33-4b56-9333-6532361c914e",
 }
-return blacklistedHwids
